@@ -1,0 +1,41 @@
+# templates/create-rg.yml
+
+parameters:
+  - name: environmentName
+    type: string
+  - name: rgName
+    type: string
+  - name: location
+    type: string
+  - name: agentPoolName
+    type: string
+  - name: serviceConnection
+    type: string
+
+jobs:
+  - job: CreateResourceGroup_${{ parameters.environmentName }}
+    displayName: 'Create RG for ${{ parameters.environmentName }}'
+    
+    pool:
+      name: ${{ parameters.agentPoolName }}
+
+    steps:
+      - script: |
+          echo "Environment: ${{ parameters.environmentName }}"
+          echo "Resource Group: ${{ parameters.rgName }}"
+          echo "Location: ${{ parameters.location }}"
+          echo "Agent Pool: ${{ parameters.agentPoolName }}"
+          echo "Service Connection: ${{ parameters.serviceConnection }}"
+        displayName: 'Print Details'
+
+      - task: AzureCLI@2
+        displayName: 'Create Azure Resource Group'
+        inputs:
+          azureSubscription: ${{ parameters.serviceConnection }}
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az group create \
+              --name ${{ parameters.rgName }} \
+              --location "${{ parameters.location }}" \
+              --tags Environment=${{ parameters.environmentName }}
